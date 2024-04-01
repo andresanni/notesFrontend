@@ -1,17 +1,10 @@
 import axios from 'axios';
-const baseUrl = 'http://localhost:3001/api/notes'
+const baseUrl = 'https://notesbackend-0ji0.onrender.com/api/notes'
 
 
 const getAll = ()=>{
-    const request = axios.get(baseUrl);
-    //Para provocar errores
-    const nonExistingNote = {
-        id:1000,
-        content: "This note is not saved to server",
-        important: true
-    }
-
-    return request.then(response=> response.data.concat(nonExistingNote))
+    const request = axios.get(baseUrl);    
+    return request.then(response=> response.data);
 }
 
 const create =  (newNote)=>{
