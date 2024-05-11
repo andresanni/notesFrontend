@@ -1,20 +1,31 @@
 import axios from 'axios';
-const baseUrl = 'https://notesbackend-0ji0.onrender.com/api/notes'
+const baseUrl = 'http://localhost:3001/api/notes';
 
+let token = null;
 
-const getAll = ()=>{
-    const request = axios.get(baseUrl);    
-    return request.then(response=> response.data);
-}
+const setToken = (newToken) => {
+  token = `Bearer ${newToken}`;
+};
 
-const create =  (newNote)=>{
-    const request = axios.post(baseUrl, newNote);
-    return  request.then(response=> response.data)
-}
+const getAll = async () => {
+  const request = axios.get(baseUrl);
+  const response = await request;
+  return response.data;
+};
 
-const update = (id, updatedNote) => {
-    const request = axios.put(`${baseUrl}/${id}`,updatedNote);
-    return request.then(response => response.data)
-}
+const create = async (newObject) => {
+  const config = {
+    headers: { Authorization: token },
+  };
+  const response = await axios.post(baseUrl, newObject, config);
+  
+  return response.data;
+};
 
-export default { getAll, create, update };
+const update = async (id, updatedNote) => {
+  const request = axios.put(`${baseUrl}/${id}`, updatedNote);
+  const response = await request;
+  return response.data;
+};
+
+export default { getAll, create, update, setToken };
