@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import noteService from './services/notes';
 import loginService from './services/login';
 import NewNoteForm from './components/NewNoteForm';
@@ -6,13 +6,15 @@ import LoginForm from './components/LoginForm';
 import Notification from './components/Notification';
 import NotesList from './components/NotesList';
 import Footer from './components/Footer';
+import Togglable from './components/Toglable';
 
 function App() {
   const [notes, setNotes] = useState([]);
   const [errorMessage, setErrorMessage] = useState();
   const [showAll, setShowAll] = useState(true);
-
   const [user, setUser] = useState(null);
+
+  const noteFormRef= useRef();
 
   useEffect(() => {
     noteService.getAll().then((notesList) => {
@@ -20,31 +22,25 @@ function App() {
     });
   }, []);
 
-  useEffect(()=>{
-
+  useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser');
 
-    if(loggedUserJSON){
-      const user= JSON.parse(loggedUserJSON);
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON);
       setUser(user);
       noteService.setToken(user.token);
     }
-
   }, []);
 
-  const handleLogin = async (username, password) => {
+  const handleLogin = async (credentials) => {
+    const { username, password } = credentials;
     try {
-      //Solicitud Post con las credenciales, devuelve user
       const user = await loginService.login({ username, password });
-      
-      //Guardo los datos del user en el local storage del navegador
-      window.localStorage.setItem('loggedNoteappUser', JSON.stringify(user));
-      
-      //Seteo el token en el servivio para poder incrustrarlo en las solicitudes
-      noteService.setToken(user.token)
-      //Finalmente seteo el ususario      
-      setUser(user);
 
+      window.localStorage.setItem('loggedNoteappUser', JSON.stringify(user));
+
+      noteService.setToken(user.token);
+      setUser(user);
     } catch (exception) {
       setErrorMessage('Wrong credentials');
       setTimeout(() => {
@@ -52,6 +48,13 @@ function App() {
       }, 5000);
     }
   };
+
+  const handleLogout = () => {
+    window.localStorage.removeItem('loggedNoteappUser');
+    setUser(null);
+    noteService.setToken(null);
+  };
+
   const toggleImportanceOf = (id) => {
     const note = notes.find((note) => note.id === id);
     const changedNote = { ...note, important: !note.important };
@@ -70,8 +73,9 @@ function App() {
       });
   };
 
-  const handleAddNote = (inputValue, isImportant) => {
-    const newNote = { content: inputValue, important: isImportant };
+  const handleAddNote = (newNote) => {
+    noteFormRef.current.toggleVisibility()
+
     noteService
       .create(newNote)
       .then((addedNote) => setNotes(notes.concat(addedNote)));
@@ -91,10 +95,18 @@ function App() {
           {user ? (
             <div>
               <p>{user.name} logged-in</p>
-              <NewNoteForm onSubmit={handleAddNote} />
+              <button onClick={handleLogout}>logout</button>
+
+              <Togglable buttonLabel="new note" ref = {noteFormRef}>
+                <NewNoteForm onSubmit={handleAddNote} />
+              </Togglable>
             </div>
           ) : (
-            <LoginForm onSubmit={handleLogin} />
+            <div>
+              <Togglable buttonLabel="login">
+                <LoginForm onSubmit={handleLogin} />
+              </Togglable>
+            </div>
           )}
         </section>
 

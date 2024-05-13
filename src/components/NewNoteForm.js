@@ -1,35 +1,40 @@
 import { useState } from 'react';
 
-const NewNoteForm = ({ onSubmit })=>{
-    
-   const [inputValue, setInputValue] = useState("");
-   const [isImportant, setIsImportant] = useState(false);
-   
-   const handleInputChange = (event)=>{
-        setInputValue(event.target.value);
-        console.log(inputValue);
-   }
+const NewNoteForm = ({ onSubmit }) => {
+  const [inputValue, setInputValue] = useState('');
+  const [isImportant, setIsImportant] = useState(false);
 
-    const hanldeCheckBoxChange = (event)=>{
-        setIsImportant(event.target.checked);
-    }
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const newNote = {
+      content: inputValue,
+      important: isImportant,
+    };
+    onSubmit(newNote);
+    setInputValue('');
+    setIsImportant(false);
+  };
 
-    const handleSubmit = (event)=>{
-        event.preventDefault();
-        onSubmit(inputValue, isImportant);
-        setInputValue("");
-        setIsImportant(false);
-    }
-
-
-    return(
-    <form onSubmit={ handleSubmit }>
-        <input onChange= {handleInputChange} value= {inputValue}/>
-        <input type="checkbox" id="important" name="important" checked= {isImportant} onChange= {hanldeCheckBoxChange}/> 
-        <label htmlFor="important"> Make Important</label><br></br>
-        <button type="submit">Add</button>
-    </form>        
-    )
-}
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        onChange={(event) => setInputValue(event.target.value)}
+        value={inputValue}
+      />
+      <input
+        type="checkbox"
+        id="important"
+        name="important"
+        checked={isImportant}
+        onChange={(event) => {
+          setIsImportant(event.target.checked);
+        }}
+      />
+      <label htmlFor="important"> Make Important</label>
+      <br></br>
+      <button type="submit">Add</button>
+    </form>
+  );
+};
 
 export default NewNoteForm;
